@@ -1,0 +1,23 @@
+LGN1                           MYBANK OF INDIA                       DD/MM/YYYY
+                                                                       HH:MM:SS
+
+                           L O G I N   S C R E E N
+
+
+
+
+        		      	 USER ID: XXXXXXX
+		        		PASSWORD: XXXXXXXX
+
+
+
+                       1. FOR LOGIN      - PRESS ENTER
+
+                       2. REFRESH SCREEN - PRESS CLEAR
+
+                       3. TO END SESSION - PRESS F3	
+
+
+
+
+ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 

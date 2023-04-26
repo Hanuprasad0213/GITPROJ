@@ -1,0 +1,23 @@
+MEN1                           MYBANK OF INDIA                       DD/MM/YYYY
+                                                                       HH:MM:SS
+
+                              M A I N   M E N U
+						   
+
+                          1. VIEW ACCOUNT SUMMARY
+                          2. BANKING
+                          3. CREDIT CARD
+                          4. PERSONAL LOAN
+                          5. HOMELOAN 
+
+
+	                    X - OPTION SELECTED
+
+
+                        KEY IN SELECTION - PRESS ENTER
+                        REFRESH          - PRESS CLEAR
+                        END OF SESSION   - PRESS PF3
+
+
+
+ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 

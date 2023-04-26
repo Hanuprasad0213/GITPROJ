@@ -1,0 +1,570 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ACCTSUMR.
+       AUTHOR. HANUPRASAD.
+      *
+       ENVIRONMENT DIVISION.
+      *
+      ***************************************************************
+      * PROGRAM: ACCTSUMR                                           *
+      ***************************************************************
+      * THIS IS A ACCOUNT SUMMARY SCREEN PROGRAM THAT DISPLAYS      *
+      *                                                             *
+      *                                                             *
+      * *************************************************************
+      *  MODIFICATION LOG:                                          *
+      * *************************************************************
+      *  NAME                  |DATE      |CHANGE DESCRIPTION       *
+      * *************************************************************
+      *  HANUPRASAD            |12/02/2023| ORIGINAL VERSION.       *
+      * ----------------------------------------------------------- *
+      *                        |          |                         *
+      * *************************************************************
+      *
+       DATA DIVISION.
+      *
+      *-------------------------------------------------------------*
+      *--                 WORKING STORAGE SECTION                 --*
+      *-------------------------------------------------------------*
+      *
+       WORKING-STORAGE SECTION.
+      
+       01 FILLER                       PIC     X(042) VALUE
+          'START OF WORKING STORAGE SECTION VARIABLES'.
+
+      *-------------------------------------------------------------*
+      *--  COPY THE FOLLOWING COPYBOOKS INTO WORKING STORAGE:     --*
+      *--       1. THE ACCSMRM SYMBOLIC MAP STRUCTURE.            --*
+      *--       2. THE ATTENTION AID KEYS DEFINITION FIELDS.      --*
+      *--       3. THE MAP ATTRIBUTE VALUE DEFINITION FIELDS.     --*
+      *-------------------------------------------------------------*
+       COPY ACCSMRM.
+       COPY DFHAID.
+       COPY DFHBMSCA.
+
+      *-------------------------------------------------------------*
+      *--             INCLUDE SQL COMMUNICATION AREA              --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            INCLUDE SQLCA
+       END-EXEC.
+
+      *-------------------------------------------------------------*
+      *--          INCLUDE ACCOUNT_MASTER TABLE DCLGEN            --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            INCLUDE ACCTMAST
+       END-EXEC.
+
+      *-------------------------------------------------------------*
+      *--          INCLUDE LOAN_MASTER TABLE DCLGEN               --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            INCLUDE LOANMAST
+       END-EXEC.
+
+      *-------------------------------------------------------------*
+      *--          CURSOR DECLARATION FOR FETCHING ROWS FROM      --*
+      *--                   LOAN_MASTER TABLE.                    --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            DECLARE LOANCURSOR CURSOR FOR
+            SELECT
+       END-EXEC.
+
+      *-------------------------------------------------------------*
+      *--                START OF PROGRAM FIELDS                  --*
+      *-------------------------------------------------------------*
+      *
+       01 WS-PROGRAM-FIELDS.
+          05 WS-PROGRAM-ID             PIC     X(008) VALUE
+             'ACCTSUMR'.
+          05 WS-TRANS-ID               PIC     X(004) VALUE
+             'ACSM'.
+
+      *-- END OF SESSION MSG.
+          05 WS-CRT-MSG                PIC     X(031) VALUE
+             'YOU HAVE REACHED END OF SESSION'.
+          05 WS-CRT-MSG-LEN            PIC    S9(04) COMP.
+
+      *-- DATE FIELD.
+          05 WS-DATE.
+             10 WS-DD                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MM                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-YYYY                PIC     X(004).
+
+      *-- TIME FIELD.
+          05 WS-TIME.
+             10 WS-HH                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MIN                 PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-SEC                 PIC     X(002).
+
+      *-- ACCOUNT SUMMARY SCREEN HEADER1.
+          05 WS-ACTHDR1.
+             10 WS-ACCT-TYPE-DES       PIC     X(027) VALUE SPACES.
+             10 FILLER                 PIC     X(005) VALUE SPACES.
+             10 WS-CURR                PIC     X(003) VALUE 'INR'.
+             10 FILLER                 PIC     X(005) VALUE SPACES.
+             10 WS-ASSETS              PIC  ZZZZZZZZZZ.ZZ.
+             10 FILLER                 PIC     X(004) VALUE SPACES.
+             10 WS-LIABILITIES         PIC  ZZZZZZZZZZ.ZZ.
+
+      *-- ACCOUNT SUMMARY SCREEN HEADER2.
+          05 WS-ACTHDR2.
+             10 WS-ACCT-TYPE-DES2      PIC     X(027) VALUE SPACES.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-LOC                 PIC     X(008) VALUE 
+                'LOCATION'.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-BAL-DES             PIC     X(007) VALUE 
+                'BALANCE'.
+             10 FILLER                 PIC     X(006) VALUE SPACES.
+
+      *-- ACCOUNT SUMMARY ACCOUNT TYPE RECORD.
+          05 WS-ACTREC.
+             10 WS-ACCT-REC-DES.
+                15 WS-ACC-DES          PIC     X(015) VALUE SPACES.
+                15 WS-ACC-MASK         PIC     X(012) VALUE SPACES.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-BRANCH              PIC     X(015) VALUE SPACES.
+             10 FILLER                 PIC     X(004) VALUE SPACES.
+             10 WS-BALANCE             PIC     ZZZZZZZZZZ.ZZ. 
+
+
+      *-- LOAN SUMMARY HEADER1.
+          05 WS-LONHDR1.
+             10 WS-LOAN-TYPE-DES       PIC     X(027) VALUE SPACES.
+             10 FILLER                 PIC     X(005) VALUE SPACES.
+             10 WS-LOAN-CURR           PIC     X(003).
+             10 FILLER                 PIC     X(005) VALUE SPACES.
+             10 WS-LOAN-ASSETS         PIC  ZZZZZZZZZZ.ZZ.
+             10 FILLER                 PIC     X(004) VALUE SPACES.
+             10 WS-LOAN-LIABILITIES    PIC  ZZZZZZZZZZ.ZZ.
+
+      *-- LOAN SUMMARY HEADER2.
+          05 WS-LONHDR2.
+             10 WS-LOAN-TYPE-DES2      PIC     X(027) VALUE SPACES.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-LOAN-LOC            PIC     X(008) VALUE 
+                'LOCATION'.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-BAL-DES             PIC     X(007) VALUE 
+                'BALANCE'.
+             10 FILLER                 PIC     X(006) VALUE SPACES.
+
+      *-- PERSONAL LOAN SUMMARY RECORD.
+          05 WS-PLONREC.
+             10 WS-PLONREC-DES.
+                15 WS-PLONREC-DES      PIC     X(015) VALUE SPACES.
+                15 WS-PLONREC-MASK     PIC     X(012) VALUE SPACES.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-PLONREC-COUNTRY     PIC     X(015) VALUE SPACES.
+             10 FILLER                 PIC     X(004) VALUE SPACES.
+             10 WS-PLONREC-BALANCE     PIC     ZZZZZZZZZZ.ZZ. 
+
+      *--HOME LOAN SUMMARY RECORD.
+          05 WS-HLONREC.
+             10 WS-HLONREC-DES.
+                15 WS-HLONREC-DES      PIC     X(015) VALUE SPACES.
+                15 WS-HLONREC-MASK     PIC     X(012) VALUE SPACES.
+             10 FILLER                 PIC     X(011) VALUE SPACES.
+             10 WS-HLONREC-COUNTRY     PIC     X(015) VALUE SPACES. 
+             10 FILLER                 PIC     X(004) VALUE SPACES.
+             10 WS-HLONREC-BALANCE     PIC     ZZZZZZZZZZ.ZZ. 
+
+
+
+
+      *-- WORKING STORAGE COMMAREA.
+          05 WS-COMMAREA.
+             10 WS-USER-ID             PIC     X(008).
+             10 WS-ACCOUNT-NO          PIC     X(012).
+             10 WS-FROM-PGM            PIC     X(008).
+
+          05 WS-COMMAREA-LEN           PIC    S9(004) COMP.
+
+      *-- PROGRAM CONSTANTS.
+          01 WC-CONSTANTS.
+             05 WC-SAVING-ACCT         PIC     X(016) VALUE
+                'SAVINGS ACCOUNTS'.
+             05 WC-SAVING-ACCT-REC     PIC     X(015) VALUE
+                'SAVINGS A/C NO '.
+
+             05 WC-CURRENT-ACCT        PIC     X(016) VALUE
+                'CURRENT ACCOUNTS'.
+             05 WC-CURRENT-ACCT-REC    PIC     X(015) VALUE
+                'CURRENT A/C NO '.
+
+             05 WC-PER-LOAN-ACCT       PIC     X(014) VALUE
+                'PERSONAL LOAN '.
+             05 WC-HOM-LOAN-ACCT       PIC     X(011) VALUE
+                'HOUSE LOAN '.
+
+
+
+
+      *-- ERROR-MSGS.
+       01 WM-ERROR-MSGS.
+          05 WM-INVALID-KEY            PIC     X(011) VALUE
+             'INVALID KEY'.
+
+          05 WM-ACCT-NOT-EXIST         PIC     X(021) VALUE
+             'ACCOUNT DOESNOT EXIST'.
+
+          05 WM-SQL-ERROR.
+             10 WM-SQL-ERROR-SEC       PIC     X(006) VALUE SPACES.
+             10 WM-SQL-ERROR-DES       PIC     X(027) VALUE
+                ', DATABASE ERROR, SQLCODE: '.
+             10 WM-SQLCODE             PIC     X(037).
+
+      *-------------------------------------------------------------*
+      *--                   LINKAGE SECTION                       --*
+      *-------------------------------------------------------------*
+      *
+       LINKGAE SECTION.
+      *
+       01 DFHCOMMAREA                  PIC     X(28).
+
+      *-------------------------------------------------------------*
+      *--                  PROCEDURE DIVISION                     --*
+      *-------------------------------------------------------------*
+      *
+       PROCEDURE DIVISION.
+
+       00000-MAIN-LINE-SECTION.
+
+           MOVE DFHCOMMAREA 
+             TO WS-COMMAREA.
+
+           IF EIBCALEN = 0
+              PERFORM A0000-SEND-INITIAL-SCREEN
+           ELSE
+              PERFORM B0000-HANDLE-AID-KEYS
+              PERFORM C0000-RECEIVE-MAP
+           END-IF.
+
+      *-------------------------------------------------------------*
+      *--                SEND FIRST TIME SCREEN                   --*
+      *-------------------------------------------------------------*
+      *
+       A0000-SEND-INITIAL-SCREEN SECTION.
+
+      *-- INITIALIZE SYMBOLIC STRUCTURE.
+           MOVE LOW-VALUES    TO ACCSMRMI
+           MOVE LOW-VALUES    TO ACCSMRMO
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           EXEC CICS SEND
+                     MAP   ('ACCSMRM')
+                     MAPSET('ACCSMR')
+                     FROM  ('ACCSMRMO')
+                     ERASE
+                     CURSOR(1891)
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC.
+
+       A0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   SEND DATAONLY                         --*
+      *-------------------------------------------------------------*
+      *
+       A0010-SEND-DATAONLY-SCREEN SECTION.
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           EXEC CICS SEND
+                     MAP   ('ACCSMRM')
+                     MAPSET('ACCSMR')
+                     FROM  (ACCSMRMO)
+                     DATAONLY
+                     CURSOR(1891)
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC.
+
+       A0010-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   RECEIVE MAP                           --*
+      *-------------------------------------------------------------*
+      *
+       C0000-RECEIVE-MAP SECTION. 
+
+           INITIALIZE ACCSMRMO.
+
+           EXEC CICS IGNORE CONDITION
+                     MAPFAIL
+           END-EXEC
+
+           EXEC CICS RECEIVE
+                     MAP   ('ACCSMRM')
+                     MAPSET('ACCSMR')
+                     INTO  (ACCSMRMO)
+           END-EXEC.
+
+       C0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          HANDLE ATTENTION IDENTIFIER KEYS               --*
+      *-------------------------------------------------------------*
+      *
+       B0000-HANDLE-AID-KEYS SECTION.
+
+           EXEC CICS HANDLE AID
+                ENTER (B0100-GET-ACCOUNT-SUMMRY)
+                  PF1 (B0200-BACK-TO-MENU)
+                  PF3 (B0300-END-OF-SESSION)
+                ANYKEY(B0400-INVALID-KEY)
+           END-EXEC.
+
+       B0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          HANDLE ATTENTION IDENTIFIER KEYS               --*
+      *-------------------------------------------------------------*
+      *
+       B0100-GET-ACCOUNT-SUMMRY SECTION.
+
+           INITIALIZE DCLACCOUNT-MASTER.
+
+           MOVE WS-USER-ID
+             TO USER-ID OF DCLACCOUNT-MASTER
+           MOVE WS-ACCOUNT-NO
+             TO ACCOUNT-NO OF DCLACCOUNT-MASTER
+
+           EXEC SQL
+                SELECT   ACCOUNT_TYPE
+                       , BRANCH
+                       , CURRNCY
+                       , BALANCE
+                  INTO
+                         :ACCOUNT-TYPE
+                       , :BRANCH
+                       , :CURRNCY
+                       , :BALANCE
+
+                  FROM ACCOUNT_MASTER
+                 WHERE USER_ID    = USER-ID OF DCLACCOUNT-MASTER
+                   AND ACCOUNT_NO = ACCOUNT-NO OF DCLACCOUNT-MASTER
+           END-EXEC
+
+           IF SQLCODE = 0
+              PERFORM B0110-FORMAT-ACCT-SUMMARY
+              PERFORM B0120-FORMAT-LOAN-SUMMARY
+           ELSE
+              IF SQLCODE = 100
+                 MOVE WM-ACCT-NOT-EXIST TO MSGO
+                 PERFORM A0010-SEND-DATAONLY-SCREEN
+              ELSE
+                 MOVE 'B0100-'     TO  WM-SQL-ERROR-SEC
+                 MOVE SQLCODE      TO  WM-SQLCODE
+                 MOVE WM-SQL-ERROR TO  MSGO
+              END-IF
+           END-IF.
+
+       B0100-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          FORMAT ACCOUNT SUMMARY SCREEN FIELDS.          --*
+      *-------------------------------------------------------------*
+      *
+       B0110-FORMAT-ACCT-SUMMARY SECTION.
+
+           INITIALIZE  WS-ACTHDR1 , WS-ACTHDR2 , WS-ACTREC
+                      
+
+           IF ACCOUNT-TYPE = 'S'
+              MOVE WC-SAVING-ACCT         TO WS-ACCT-TYPE-DES
+              MOVE WC-SAVING-ACCT-REC     TO WS-ACC-DES
+           ELSE
+              IF ACCOUNT-TYPE = 'C'
+                 MOVE WC-CURRENT-ACCT     TO WS-ACCT-TYPE-DES
+                 MOVE WC-CURRENT-ACCT-REC TO WS-ACC-DES
+              ELSE
+                 MOVE SPACES              TO WS-ACCT-TYPE-DES
+                 MOVE SPACES              TO WS-ACC-DES
+              END-IF
+           END-IF
+
+           MOVE BALANCE                   TO WS-ASSETS
+           MOVE ZEROES                    TO WS-LIABILITIES
+           
+           MOVE WS-ACCOUNT-NO             TO WS-ACC-MASK
+           MOVE  '-'                      TO WS-ACC-MASK(2:1)
+           MOVE  'XX'                     TO WS-ACC-MASK(4:2)
+           MOVE  'XX'                     TO WS-ACC-MASK(7:2)
+           MOVE  '-'                      TO WS-ACC-MASK(9:1)
+           MOVE  'X'                      TO WS-ACC-MASK(10:1)
+           
+           MOVE BRANCH                    TO WS-BRANCH
+           MOVE BALANCE                   TO WS-BALANCE
+
+           MOVE WS-ACTHDR1                TO ACTHDR1O
+           MOVE WS-ACTHDR2                TO ACTHDR2O
+           MOVE WS-ACTREC                 TO ACTRECO.
+
+       B0110-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          FORMAT LOAN SUMMARY SCREEN FIELDS.             --*
+      *-------------------------------------------------------------*
+      *
+       B0120-FORMAT-LOAN-SUMMARY SECTION.
+
+           INITIALIZE WS-LONHDR1
+                    , WS-LONHDR2
+                    , WS-PLONREC
+                    , WS-HLONREC
+
+           INITIALIZE DCLLOAN-MASTER.
+
+           MOVE WS-USER-ID
+             TO USER-ID OF DCLLOAN-MASTER
+           MOVE WS-ACCOUNT-NO
+             TO ACCOUNT-NO OF DCLLOAN-MASTER
+
+           EXEC SQL
+                SELECT   LOAN_ACCOUNT_NO
+                       , COUNTRY
+                       , OUTSTAND_BALANCE
+                  INTO 
+                        :LOAN-ACCOUNT-NO
+                        :COUNTRY
+                        :OUTSTAND-BALANCE
+                  FROM LOAN_MASTER
+                 WHERE USER_ID    = USER-ID OF DCLLOAN-MASTER
+                   AND ACCOUNT_NO = ACCOUNT-NO OF DCLLOAN-MASTER
+                   AND LOAN_TYPE  = 'P'
+                   FETCH FIRST ROW ONLY
+           END-EXEC
+
+           IF SQLCODE = 0 OR 100
+              CONTINUE
+           ELSE
+              MOVE 'B0120-'     TO  WM-SQL-ERROR-SEC
+              MOVE SQLCODE      TO  WM-SQLCODE
+              MOVE WM-SQL-ERROR TO  MSGO
+           END-IF
+
+           MOVE WC-PER-LOAN-ACCT
+                                TO WS-LOAN-TYPE-DES
+           MOVE COUNTRY         TO WS-LOAN-CURR
+           MOVE ZEROES          TO WS-LOAN-ASSETS
+           MOVE OUTSTAND-BALANCE
+                                TO WS-LOAN-LIABILITIES
+
+           MOVE WS-LONHDR1      TO LONHDR1O
+
+
+
+
+
+
+
+                  
+
+
+
+       B0120-EXIT.
+           EXIT.
+
+
+      *-------------------------------------------------------------*
+      *--          SEND BACK TO MENU SCREEN                       --*
+      *-------------------------------------------------------------*
+      *
+       B0200-BACK-TO-MENU SECTION.
+
+           MOVE 28      TO   WS-COMMAREA-LEN
+
+           EXEC CICS XCTL
+                     PROGRAM (WS-FROM-PGM)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC.
+
+       B0200-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                     END OF SESSION                      --*
+      *-------------------------------------------------------------*
+      *
+       B0300-END-OF-SESSION SECTION.
+
+           MOVE 31   TO WS-CRT-MSG-LEN
+
+           EXEC CICS SEND
+                     FROM  (WS-CRT-MSG)
+                     LENGTH(WS-CRT-MSG-LEN)
+                     ERASE
+           END-EXEC
+
+           EXEC CICS RETURN
+           END-EXEC.
+
+       B0300-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                HANDLING INVALID KEY PRESS               --*
+      *-------------------------------------------------------------*
+      *
+       B0400-INVALID-KEY SECTION.
+
+           MOVE WM-INVALID-KEY    TO MSGO
+           PERFORM A0010-SEND-DATAONLY-SCREEN.
+
+       B0400-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 FORMAT DATE AND TIME                    --*
+      *-------------------------------------------------------------*
+      *
+       D0000-GET-DATE-AND-TIME SECTION.
+
+           INITIALIZE  WS-DATE
+                     , WS-TIME.
+
+      *-- FORMAT DATE AND TIME.
+           EXEC CICS FORMATTIME
+                     MMDDYYYY(WS-DATE)
+                     DATESEP
+                     TIME(WS-TIME)
+                     TIMESEP
+           END-EXEC.
+
+      *-- ASSIGN DATE AND TIME TO SCREEN OUTPUT FIELDS.
+
+           MOVE WS-DATE       TO DATE1O
+           MOVE WS-TIME       TO TIME1O.
+
+       D0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                END OF PROGRAM - ACCTSUMR                --*
+      *-------------------------------------------------------------*

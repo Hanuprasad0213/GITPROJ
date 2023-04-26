@@ -1,0 +1,430 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. MYBNK001.
+       AUTHOR. HANUPRASAD.
+      *
+       ENVIRONMENT DIVISION.
+      *
+      ***************************************************************
+      * PROGRAM: MYBNK001                                           *
+      ***************************************************************
+      * THIS IS A LOGIN SCREEN PROGRAM THAT ACCEPTS USER CREDENTIALS*
+      * LIKE USER ID AND PASSWORD FROM THE CUSTOMER. IF CUSTOMER IS *
+      * VALID THEN MAIN MENU SCREEN WILL BE PROMPTED ON THE SCREEN. *
+      * *************************************************************
+      *  MODIFICATION LOG:                                          *
+      * *************************************************************
+      *  NAME                  |DATE      |CHANGE DESCRIPTION       *
+      * *************************************************************
+      *  HANUPRASAD            |12/02/2023| ORIGINAL VERSION.       *
+      * ----------------------------------------------------------- *
+      *                        |          |                         *
+      * *************************************************************
+      *
+       DATA DIVISION.
+      *
+      *-------------------------------------------------------------*
+      *--                 WORKING STORAGE SECTION                 --*
+      *-------------------------------------------------------------*
+      *
+       WORKING-STORAGE SECTION.
+      
+       01 FILLER                       PIC     X(042) VALUE
+          'START OF WORKING STORAGE SECTION VARIABLES'.
+
+      *-------------------------------------------------------------*
+      *--  COPY THE FOLLOWING COPYBOOKS INTO WORKING STORAGE:     --*
+      *--       1. THE LGNSCR SYMBOLIC MAP STRUCTURE.             --*
+      *--       2. THE ATTENTION AID KEYS DEFINITION FIELDS.      --*
+      *--       3. THE MAP ATTRIBUTE VALUE DEFINITION FIELDS.     --*
+      *-------------------------------------------------------------*
+       COPY LGNSCR.
+       COPY DFHAID.
+       COPY DFHBMSCA.
+      *-------------------------------------------------------------*
+      *--             INCLUDE SQL COMMUNICATION AREA              --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            INCLUDE SQLCA
+       END-EXEC.
+
+      *-------------------------------------------------------------*
+      *--          INCLUDE USER_ACCOUNT TABLE DCLGEN              --*
+      *-------------------------------------------------------------*
+       EXEC SQL
+            INCLUDE USRACCNT
+       END-EXEC.
+      *-------------------------------------------------------------*
+      *--                START OF PROGRAM FIELDS                  --*
+      *-------------------------------------------------------------*
+      *
+       01 WS-PROGRAM-FIELDS.
+          05 WS-PROGRAM-ID             PIC     X(008) VALUE
+             'MYBNK001'.
+          05 WS-TRANS-ID               PIC     X(004) VALUE
+             'LGN1'.
+
+      *-- END OF SESSION MSG.
+          05 WS-CRT-MSG                PIC     X(031) VALUE
+             'YOU HAVE REACHED END OF SESSION'.
+          05 WS-CRT-MSG-LEN            PIC    S9(04) COMP.
+
+      *-- XCTL PROGRAM NAME.
+          05 WS-XCTL-PGM               PIC     X(008) VALUE
+             'MAINMENU'.
+
+      *-- DATE FIELD.
+          05 WS-DATE.
+             10 WS-DD                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MM                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-YYYY                PIC     X(004).
+
+      *-- TIME FIELD.
+          05 WS-TIME.
+             10 WS-HH                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MIN                 PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-SEC                 PIC     X(002).
+
+      *-- WORKING STORAGE COMMAREA.
+          05 WS-COMMAREA.
+             10 WS-USER-ID             PIC     X(008).
+             10 WS-ACCOUNT-NO          PIC     X(012).
+
+          05 WS-COMMAREA-LEN           PIC    S9(004) COMP.
+
+      *-- ERROR-MSGS.
+       01 WM-ERROR-MSGS.
+
+          05 WM-USRID-BLANK-MSG        PIC     X(023) VALUE
+             'USER ID CANNOT BE BLANK'.
+
+          05 WM-USRID-NUMERIC-MSG      PIC     X(023) VALUE
+             'USER ID CANNOT BE NUMERIC'.
+
+          05 WM-PWD-BLANK-MSG          PIC     X(024) VALUE
+             'PASSWORD CANNOT BE BLANK'.
+
+          05 WM-INVALID-KEY            PIC     X(011) VALUE
+             'INVALID KEY'.
+
+          05 WM-SQL-ERROR.
+             10 WM-SQL-ERROR           PIC     X(025) VALUE
+                'DATABASE ERROR, SQLCODE: '.
+             10 WM-SQLCODE             PIC     X(45).
+
+      *-------------------------------------------------------------*
+      *--                   LINKAGE SECTION                       --*
+      *-------------------------------------------------------------*
+      *
+       LINKGAE SECTION.
+      *
+       01 DFHCOMMAREA                  PIC     X(20).
+
+      *-------------------------------------------------------------*
+      *--                  PROCEDURE DIVISION                     --*
+      *-------------------------------------------------------------*
+      *
+       PROCEDURE DIVISION.
+
+       00000-MAIN-LINE-SECTION.
+
+           MOVE DFHCOMMAREA 
+             TO WS-COMMAREA.
+
+           IF EIBCALEN = 0
+              PERFORM A0000-SEND-INITIAL-SCREEN
+           ELSE
+              PERFORM B0000-HANDLE-AID-KEYS
+              PERFORM C0000-RECEIVE-MAP
+           END-IF
+           .
+
+      *-------------------------------------------------------------*
+      *--                SEND FIRST TIME SCREEN                   --*
+      *-------------------------------------------------------------*
+      *
+       A0000-SEND-INITIAL-SCREEN SECTION.
+
+      *-- INITIALIZE SYMBOLIC STRUCTURE.
+           MOVE LOW-VALUES    TO LGNSCRMI
+           MOVE LOW-VALUES    TO LGNSCRMO
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           MOVE -1            TO USRIDL
+
+           EXEC CICS SEND
+                     MAP   ('LGNSCRM')
+                     MAPSET('LGNSCR')
+                     FROM  ('LGNSCRMO')
+                     ERASE
+                     CURSOR
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       A0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   SEND DATAONLY                         --*
+      *-------------------------------------------------------------*
+      *
+       A0010-SEND-DATAONLY-SCREEN SECTION.
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           EXEC CICS SEND
+                     MAP   ('LGNSCRM')
+                     MAPSET('LGNSCR')
+                     FROM  (LGNSCRMO)
+                     DATAONLY
+                     CURSOR
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       A0010-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   RECEIVE MAP                           --*
+      *-------------------------------------------------------------*
+      *
+       C0000-RECEIVE-MAP SECTION. 
+
+           INITIALIZE LGNSCRMO.
+
+           EXEC CICS IGNORE CONDITION
+                     MAPFAIL
+           END-EXEC
+
+           EXEC CICS RECEIVE
+                     MAP   ('LGNSCRM')
+                     MAPSET('LGNSCR')
+                     INTO  (LGNSCRMI)
+           END-EXEC
+           .
+
+       C0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          HANDLE ATTENTION IDENTIFIER KEYS               --*
+      *-------------------------------------------------------------*
+      *
+       B0000-HANDLE-AID-KEYS SECTION.
+
+           EXEC CICS HANDLE AID
+                ENTER(B0100-PROCESS-CREDENTIALS)
+                  PF3(B0200-END-OF-SESSION)
+                CLEAR(B0300-REFRESH-SCREEN)
+               ANYKEY(B0400-INVALID-KEY)
+           END-EXEC
+           .
+
+       B0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                  PROCESS INPUT DATA                    --*
+      *-------------------------------------------------------------*
+      *
+       B0100-PROCESS-CREDENTIALS SECTION.
+
+      *-- VALIDATE INPUT CREDENTIALS. 
+           PERFORM B0110-VALIDATE-CREDENTIALS
+           PERFORM B0120-AUTHORIZE-CREDENTIALS
+
+      *-- FOR VALID USER, NAVIGATE TO USER ACCOUNT MENU SCREEN.
+           PERFORM B0130-XCTL-MAIN-MENU
+           .
+
+       B0100-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 VALIDATE INPUT CREDENTIALS              --*
+      *-------------------------------------------------------------*
+      *
+       B0110-VALIDATE-CREDENTIALS SECTION.
+
+           IF USRIDI IS EQUAL TO SPACES
+              MOVE WM-USRID-BLANK-MSG    TO MSGO
+              MOVE -1                    TO USRIDL
+              PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-IF
+
+           IF USRIDI IS NUMERIC
+              MOVE WM-USRID-NUMERIC-MSG  TO MSGO
+              MOVE -1                    TO USRIDL
+              PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-IF
+
+           IF PWDI IS EQUAL TO SPACES
+              MOVE WM-PWD-BLANK-MSG      TO MSGO
+              MOVE -1                    TO PWDL
+              PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-IF
+           .
+
+       B0110-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 VERIFY CREDENTIAL                       --*
+      *-------------------------------------------------------------*
+      *
+       B0120-AUTHORIZE-CREDENTIALS SECTION.
+
+           INITIALIZE  USER-ID
+           INITIALIZE  USER-PWD
+           INITIALIZE  MSGO
+
+           MOVE USRIDI               TO   USER-ID
+           MOVE PWDI                 TO   USER-PWD
+
+           EXEC SQL
+                SELECT  
+                        USER_ID
+                      , ACCOUNT_NO
+
+                  INTO 
+                       :USER-ID
+                       :ACCOUNT-NO
+
+                  FROM  USER_ACCOUNT
+                 WHERE  USER_ID  = :USER-ID
+                   AND  USER_PWD = :USER-PWD
+           END-EXEC
+
+           IF SQLCODE = 0
+              CONTINUE
+           ELSE
+              IF SQLCODE = 100
+                 MOVE WM-INVALID-USER   TO MSGO
+                 MOVE -1                TO USRIDL
+                 PERFORM A0010-SEND-DATAONLY-SCREEN
+              ELSE
+                 MOVE SQLCODE           TO WM-SQLCODE
+                 MOVE WM-SQL-ERROR      TO MSGO
+              END-IF
+           END-IF
+           .               
+
+       B0120-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--         TRANSFER TO USER ACCOUNT MENU SCREEN            --*
+      *-------------------------------------------------------------*
+      *
+       B0130-XCTL-MAIN-MENU SECTION.
+
+           INITIALIZE WS-COMMAREA.
+
+           MOVE USER-ID              TO   WS-USER-ID
+           MOVE ACCOUNT-NO           TO   WS-ACCOUNT-NO
+           MOVE 20                   TO   WS-COMMAREA-LEN
+
+           EXEC CICS XCTL
+                     PROGRAM (WS-XCTL-PGM)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       B0130-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                     END OF SESSION                      --*
+      *-------------------------------------------------------------*
+      *
+       B0200-END-OF-SESSION SECTION.
+
+           MOVE 31   TO WS-CRT-MSG-LEN
+
+           EXEC CICS SEND
+                     FROM  (WS-CRT-MSG)
+                     LENGTH(WS-CRT-MSG-LEN)
+                     ERASE
+           END-EXEC
+
+           EXEC CICS RETURN
+           END-EXEC
+           .
+
+       B0200-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                     REFRESH SCREEN                      --*
+      *-------------------------------------------------------------*
+      *
+       B0300-REFRESH-SCREEN SECTION.
+
+           PERFORM A0000-SEND-INITIAL-SCREEN
+           .
+
+       B0300-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                HANDLING INVALID KEY PRESS               --*
+      *-------------------------------------------------------------*
+      *
+       B0400-INVALID-KEY SECTION.
+
+           MOVE WM-INVALID-KEY    TO MSGO
+           MOVE -1                TO USRIDL
+           PERFORM A0010-SEND-DATAONLY-SCREEN
+           .
+
+       B0400-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 FORMAT DATE AND TIME                    --*
+      *-------------------------------------------------------------*
+      *
+       D0000-GET-DATE-AND-TIME SECTION.
+
+           INITIALIZE  WS-DATE
+           INITIALIZE  WS-TIME.
+
+      *-- FORMAT DATE AND TIME.
+           EXEC CICS FORMATTIME
+                     MMDDYYYY(WS-DATE)
+                     DATESEP
+                     TIME(WS-TIME)
+                     TIMESEP
+           END-EXEC.
+
+      *-- ASSIGN DATE AND TIME TO SCREEN OUTPUT FIELDS.
+
+           MOVE WS-DATE       TO DATE1O
+           MOVE WS-TIME       TO TIME1O
+           .
+
+       D0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                END OF PROGRAM - MYBNK001                --*
+      *-------------------------------------------------------------*

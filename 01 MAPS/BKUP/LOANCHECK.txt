@@ -1,0 +1,24 @@
+ACSM                           MYBANK OF INDIA                       DD/MM/YYYY
+                                                                       HH:MM:SS
+
+                  A C C O U N T   S U M M A R Y   S C R E E N
+
+	   
+  BALANCE SUMMARY              CURRENCY      ASSETS         LIABILITIES
+  XXXXXXXXXXXXXXXXXXXXXXXXXXX     XXX     9999999999.99    9999999999.99
+
+
+  SAVINGS ACCOUNT                       LOCATION           BALANCE
+  SAVINGS A/C NO 8-2XX2XX-X21           CHENNAI            9999999999.99
+
+  
+  LOAN ACCOUNT                          LOCATION           BALANCE
+  PERSONAL LOAN LZY2XX2XXYX21           CHENNAI            9999999999.99
+      HOME LOAN LZY2XX2XXYX21           CHENNAI            9999999999.99
+
+   
+
+  TOTAL                            INR      NNNNNNNNNN.NN  NNNNNNNNNN.NN    
+
+ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+ F1=BACK             F7=UP              F8=DOWN              F12=END OF SESSION

@@ -1,0 +1,23 @@
+MEN1                           MYBANK OF INDIA                       DD/MM/YYYY
+                                                                       HH:MM:SS
+
+                         B A N K I N G   S C R E E N
+
+
+                          1. VIEW ACCOUNT SUMMARY
+                          2. CONTACT DETAILS
+                          3. PAY CREDIT CARD BILL
+                          4. PAYEE LIST
+                          5. TRANSFER FUNDS
+                          6. VIEW OR DOWNLOAD STATEMENTS
+
+
+	                    X - OPTION SELECTED
+
+
+                        KEY IN SELECTION        - PRESS ENTER
+                        REFRESH                 - PRESS CLEAR
+                        FOR BACK TO MAIN MENU   - PRESS PF3
+
+
+ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 

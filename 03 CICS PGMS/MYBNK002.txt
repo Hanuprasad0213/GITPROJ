@@ -1,0 +1,385 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. MYBNK002.
+       AUTHOR. HANUPRASAD.
+      *
+       ENVIRONMENT DIVISION.
+      *
+      ***************************************************************
+      * PROGRAM: MYBNK002                                           *
+      ***************************************************************
+      * THIS IS A MAIN MENU PROGRAM                                 *
+      *                                                             *
+      *                                                             *
+      * *************************************************************
+      *  MODIFICATION LOG:                                          *
+      * *************************************************************
+      *  NAME                  |DATE      |CHANGE DESCRIPTION       *
+      * *************************************************************
+      *  HANUPRASAD            |12/02/2023| ORIGINAL VERSION.       *
+      * ----------------------------------------------------------- *
+      *                        |          |                         *
+      * *************************************************************
+      *
+       DATA DIVISION.
+      *
+      *-------------------------------------------------------------*
+      *--                 WORKING STORAGE SECTION                 --*
+      *-------------------------------------------------------------*
+      *
+       WORKING-STORAGE SECTION.
+      
+       01 FILLER                       PIC     X(042) VALUE
+          'START OF WORKING STORAGE SECTION VARIABLES'.
+
+      *-------------------------------------------------------------*
+      *--  COPY THE FOLLOWING COPYBOOKS INTO WORKING STORAGE:     --*
+      *--       1. THE MENSCR SYMBOLIC MAP STRUCTURE.             --*
+      *--       2. THE ATTENTION AID KEYS DEFINITION FIELDS.      --*
+      *--       3. THE MAP ATTRIBUTE VALUE DEFINITION FIELDS.     --*
+      *-------------------------------------------------------------*
+       COPY MENSCRM.
+       COPY DFHAID.
+       COPY DFHBMSCA.
+
+      *-------------------------------------------------------------*
+      *--                START OF PROGRAM FIELDS                  --*
+      *-------------------------------------------------------------*
+      *
+       01 WS-PROGRAM-FIELDS.
+          05 WS-PROGRAM-ID             PIC     X(008) VALUE
+             'MYBNK002'.
+          05 WS-TRANS-ID               PIC     X(004) VALUE
+             'MNU1'.
+
+      *-- END OF SESSION MSG.
+          05 WS-CRT-MSG                PIC     X(031) VALUE
+             'YOU HAVE REACHED END OF SESSION'.
+          05 WS-CRT-MSG-LEN            PIC    S9(04) COMP.
+
+      *-- XCTL PROGRAM NAME.
+          05 WS-XCTL-PGM               PIC     X(008).
+             88 WS-MYBNK003  VALUE 'MYBNK003'.
+             88 WS-MYBNK004  VALUE 'MYBNK004'.
+
+      *-- DATE FIELD.
+          05 WS-DATE.
+             10 WS-DD                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MM                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-YYYY                PIC     X(004).
+
+      *-- TIME FIELD.
+          05 WS-TIME.
+             10 WS-HH                  PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-MIN                 PIC     X(002).
+             10 FILLER                 PIC     X(001).
+             10 WS-SEC                 PIC     X(002).
+
+      *-- WORKING STORAGE COMMAREA.
+          05 WS-COMMAREA.
+             10 WS-USER-ID             PIC     X(008).
+             10 WS-ACCOUNT-NO          PIC     X(012).
+             10 WS-SWITCH-PGM-ID       PIC     X(008).
+
+          05 WS-COMMAREA-LEN           PIC    S9(004) COMP.
+
+      *-- ERROR-MSGS.
+       01 WM-ERROR-MSGS.
+
+          05 WM-OPTION-BLANK-MSG       PIC     X(032) VALUE
+             'CHOOSE AN OPTION FROM ABOVE MENU'.
+
+          05 WM-OPTION-NOT-NUM-MSG     PIC     X(024) VALUE
+             'OPTION SHOULD BE NUMERIC'.
+
+          05 WM-INVALID-OPT-MSG        PIC     X(026) VALUE
+             'INVALID OPTION IS SELECTED'.
+
+          05 WM-INVALID-KEY            PIC     X(011) VALUE
+             'INVALID KEY'.
+
+      *-------------------------------------------------------------*
+      *--                   LINKAGE SECTION                       --*
+      *-------------------------------------------------------------*
+      *
+       LINKGAE SECTION.
+      *
+       01 DFHCOMMAREA                  PIC     X(28).
+
+      *-------------------------------------------------------------*
+      *--                  PROCEDURE DIVISION                     --*
+      *-------------------------------------------------------------*
+      *
+       PROCEDURE DIVISION.
+
+       00000-MAIN-LINE-SECTION.
+
+           MOVE DFHCOMMAREA 
+             TO WS-COMMAREA.
+
+           IF EIBCALEN = 0
+              PERFORM A0000-SEND-INITIAL-SCREEN
+           ELSE
+              PERFORM B0000-HANDLE-AID-KEYS
+              PERFORM C0000-RECEIVE-MAP
+           END-IF
+           .
+
+      *-------------------------------------------------------------*
+      *--                SEND FIRST TIME SCREEN                   --*
+      *-------------------------------------------------------------*
+      *
+       A0000-SEND-INITIAL-SCREEN SECTION.
+
+      *-- INITIALIZE SYMBOLIC STRUCTURE.
+           MOVE LOW-VALUES    TO MENSCRMI
+           MOVE LOW-VALUES    TO MENSCRMO
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           MOVE -1            TO USRIDL
+
+           EXEC CICS SEND
+                     MAP   ('MENSCRM')
+                     MAPSET('MENSCR')
+                     FROM  ('MENSCRMO')
+                     ERASE
+                     CURSOR
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       A0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   SEND DATAONLY                         --*
+      *-------------------------------------------------------------*
+      *
+       A0010-SEND-DATAONLY-SCREEN SECTION.
+
+      *-- GET DATE AND TIME.
+           PERFORM D0000-GET-DATE-AND-TIME. 
+
+           EXEC CICS SEND
+                     MAP   ('MENSCRM')
+                     MAPSET('MENSCR')
+                     FROM  (MENSCRMO)
+                     DATAONLY
+                     CURSOR
+           END-EXEC
+
+           EXEC CICS RETURN
+                     TRANSID (WS-TRANS-ID)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       A0010-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                   RECEIVE MAP                           --*
+      *-------------------------------------------------------------*
+      *
+       C0000-RECEIVE-MAP SECTION. 
+
+           INITIALIZE MENSCRMO.
+
+           EXEC CICS IGNORE CONDITION
+                     MAPFAIL
+           END-EXEC
+
+           EXEC CICS RECEIVE
+                     MAP   ('MENSCRM')
+                     MAPSET('MENSCR')
+                     INTO  (MENSCRMI)
+           END-EXEC
+           .
+
+       C0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--          HANDLE ATTENTION IDENTIFIER KEYS               --*
+      *-------------------------------------------------------------*
+      *
+       B0000-HANDLE-AID-KEYS SECTION.
+
+           EXEC CICS HANDLE AID
+                ENTER(B0100-PROCESS-OPTION)
+                  PF3(B0200-END-OF-SESSION)
+                CLEAR(B0300-REFRESH-SCREEN)
+               ANYKEY(B0400-INVALID-KEY)
+           END-EXEC
+           .
+
+       B0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                  PROCESS INPUT DATA                    --*
+      *-------------------------------------------------------------*
+      *
+       B0100-PROCESS-OPTION SECTION.
+
+      *-- VALIDATE INPUT OPTION. 
+           PERFORM B0110-VALIDATE-OPTION
+
+      *-- FOR VALID USER, NAVIGATE TO USER ACCOUNT MENU SCREEN.
+           PERFORM B0120-XCTL-PROGRAM
+           .
+
+       B0100-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 VALIDATE INPUT CREDENTIALS              --*
+      *-------------------------------------------------------------*
+      *
+       B0110-VALIDATE-OPTION SECTION.
+
+           IF OPTI IS EQUAL TO SPACES
+              MOVE WM-OPTION-BLANK-MSG    TO MSGO
+              MOVE -1                     TO OPTL
+              PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-IF
+
+           IF OPTI IS NOT NUMERIC
+              MOVE WM-OPTION-NOT-NUM-MSG TO MSGO
+              MOVE -1                    TO OPTL
+              PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-IF
+ 
+           MOVE SPACES 
+             TO WS-SWITCH-PGM-ID
+
+           EVALUATE OPTI
+               WHEN '1' 
+                        SET WS-MYBNK003    TO TRUE
+                        MOVE WS-PROGRAM-ID TO WS-SWITCH-PGM-ID
+               WHEN '2' 
+                        SET WS-MYBNK004    TO TRUE
+               WHEN '3' 
+                        SET WS-MYBNK005    TO TRUE
+               WHEN '4' 
+                        SET WS-MYBNK006    TO TRUE
+               WHEN '5' 
+                        SET WS-MYBNK007    TO TRUE
+               WHEN OTHER
+                        MOVE WM-INVALID-OPT-MSG TO MSGO
+                        MOVE -1                 TO OPTL
+                        PERFORM A0010-SEND-DATAONLY-SCREEN
+           END-EVALUATE   
+           .
+
+       B0110-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--         TRANSFER TO USER ACCOUNT MENU SCREEN            --*
+      *-------------------------------------------------------------*
+      *
+       B0120-XCTL-PROGRAM SECTION.
+
+           INITIALIZE WS-COMMAREA.
+
+           MOVE USER-ID              TO   WS-USER-ID
+           MOVE ACCOUNT-NO           TO   WS-ACCOUNT-NO
+           MOVE 28                   TO   WS-COMMAREA-LEN
+
+           EXEC CICS XCTL
+                     PROGRAM (WS-XCTL-PGM)
+                     COMMAREA(WS-COMMAREA)
+                     LENGTH  (WS-COMMAREA-LEN)
+           END-EXEC
+           .
+
+       B0120-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                     END OF SESSION                      --*
+      *-------------------------------------------------------------*
+      *
+       B0200-END-OF-SESSION SECTION.
+
+           MOVE 31   TO WS-CRT-MSG-LEN
+
+           EXEC CICS SEND
+                     FROM  (WS-CRT-MSG)
+                     LENGTH(WS-CRT-MSG-LEN)
+                     ERASE
+           END-EXEC
+
+           EXEC CICS RETURN
+           END-EXEC
+           .
+
+       B0200-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                     REFRESH SCREEN                      --*
+      *-------------------------------------------------------------*
+      *
+       B0300-REFRESH-SCREEN SECTION.
+
+           PERFORM A0000-SEND-INITIAL-SCREEN
+           .
+
+       B0300-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                HANDLING INVALID KEY PRESS               --*
+      *-------------------------------------------------------------*
+      *
+       B0400-INVALID-KEY SECTION.
+
+           MOVE WM-INVALID-KEY    TO MSGO
+           MOVE -1                TO USRIDL
+           PERFORM A0010-SEND-DATAONLY-SCREEN
+           .
+
+       B0400-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                 FORMAT DATE AND TIME                    --*
+      *-------------------------------------------------------------*
+      *
+       D0000-GET-DATE-AND-TIME SECTION.
+
+           INITIALIZE  WS-DATE
+           INITIALIZE  WS-TIME.
+
+      *-- FORMAT DATE AND TIME.
+           EXEC CICS FORMATTIME
+                     MMDDYYYY(WS-DATE)
+                     DATESEP
+                     TIME(WS-TIME)
+                     TIMESEP
+           END-EXEC.
+
+      *-- ASSIGN DATE AND TIME TO SCREEN OUTPUT FIELDS.
+
+           MOVE WS-DATE       TO DATE1O
+           MOVE WS-TIME       TO TIME1O
+           .
+
+       D0000-EXIT.
+           EXIT.
+
+      *-------------------------------------------------------------*
+      *--                END OF PROGRAM - MYBNK002                --*
+      *-------------------------------------------------------------*

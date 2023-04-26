@@ -1,0 +1,131 @@
+ACCSMR   DFHMSD TYPE=&SYSPARM,                                         X
+               CTRL=(FREEKB,FRSET),                                    X
+               TIOAPFX=YES,                                            X
+               STORAGE=AUTO,                                           X
+               MODE=INOUT,                                             X
+               LANG=COBOL,                                             X
+               MAPATTS=(COLOR,HILIGHT),                                X
+               DSATTS=(COLOR,HILIGHT)
+*
+ACCSMRM  DFHMDI SIZE=(24,80)
+*
+         DFHMDF POS=(1,1),                                             X
+               LENGTH=4,                                               X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='ACSM' 
+*
+         DFHMDF POS=(1,32),                                            X
+               LENGTH=15,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='MYBANK OF INDIA'
+*
+DATE1    DFHMDF POS=(1,70),                                            X
+               LENGTH=10,                                              X
+               COLOR=YELLOW,                                           X
+               ATTRB=ASKIP,                                            X
+               INITIAL='DD/MM/YYYY'
+*
+TIME1    DFHMDF POS=(2,72),                                            X
+               LENGTH=8,                                               X
+               COLOR=YELLOW,                                           X
+               ATTRB=ASKIP,                                            X
+               INITIAL='HH:MM:SS'
+*
+         DFHMDF POS=(4,19),                                            X
+               LENGTH=43,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='A C C O U N T   S U M M A R Y   S C R E E N'
+*
+         DFHMDF POS=(6,3),                                             X
+               LENGTH=15,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='BALANCE SUMMARY'
+*
+         DFHMDF POS=(6,40),                                            X
+               LENGTH=8,                                               X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='CURRENCY'
+*
+         DFHMDF POS=(6,46),                                            X
+               LENGTH=6,                                               X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='ASSETS'
+*
+         DFHMDF POS=(6,61),                                            X
+               LENGTH=11,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='LIABILITIES'
+*
+ACTHDR1  DFHMDF POS=(8,3),                                             X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+ACTHDR2  DFHMDF POS=(10,3),                                            X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+ACTREC  DFHMDF POS=(11,3),                                             X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+LONHDR1  DFHMDF POS=(14,3),                                             X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+LONHDR2  DFHMDF POS=(16,3),                                            X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+PLONREC DFHMDF POS=(17,3),                                             X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+HLONREC DFHMDF POS=(18,3),                                             X
+               LENGTH=70,                                              X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+TOTREC   DFHMDF POS=(20,3),                                            X
+               LENGTH=70,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='                                           '
+*
+MSG      DFHMDF POS=(23,2),                                            X
+               LENGTH=70,                                              X
+               ATTRB=ASKIP
+*
+         DFHMDF POS=(23,2),                                            X
+               LENGTH=28,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='FOR BACK TO MENU - PRESS PF1'
+*
+         DFHMDF POS=(23,42),                                           X
+               LENGTH=30,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='FOR END OF SESSION - PRESS PF3'
+*
+         DFHMSD TYPE=FINAL
+         END

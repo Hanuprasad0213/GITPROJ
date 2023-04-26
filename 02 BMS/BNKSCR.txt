@@ -1,0 +1,98 @@
+BNKSCR   DFHMSD TYPE=&SYSPARM,                                         X
+               CTRL=(FREEKB,FRSET),                                    X
+               TIOAPFX=YES,                                            X
+               STORAGE=AUTO,                                           X
+               MODE=INOUT,                                             X
+               LANG=COBOL,                                             X
+               MAPATTS=(COLOR,HILIGHT),                                X
+               DSATTS=(COLOR,HILIGHT)
+*
+BNKSCRM  DFHMDI SIZE=(24,80)
+*
+         DFHMDF POS=(1,1),                                             X
+               LENGTH=4,                                               X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='LGN1' 
+*
+         DFHMDF POS=(1,32),                                            X
+               LENGTH=15,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='MYBANK OF INDIA'
+*
+DATE1    DFHMDF POS=(1,70),                                            X
+               LENGTH=10,                                              X
+               COLOR=YELLOW,                                           X
+               ATTRB=ASKIP,                                            X
+               INITIAL='DD/MM/YYYY'
+*
+TIME1    DFHMDF POS=(2,72),                                            X
+               LENGTH=8,                                               X
+               COLOR=YELLOW,                                           X
+               ATTRB=ASKIP,                                            X
+               INITIAL='HH:MM:SS'
+*
+         DFHMDF POS=(4,31),                                            X
+               LENGTH=17,                                              X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='M A I N   M E N U'
+*
+         DFHMDF POS=(8,19),                                            X
+               LENGTH=8,                                               X
+               COLOR=BLUE,                                             X
+               ATTRB=ASKIP,                                            X
+               INITIAL='USER ID:'
+*
+         DFHMDF POS=(7,27),                                            X
+               LENGTH=23,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='1. VIEW ACCOUNT SUMMARY'
+*
+         DFHMDF POS=(8,27),                                            X
+               LENGTH=10,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='2. BANKING'
+*
+         DFHMDF POS=(9,27),                                            X
+               LENGTH=14,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='3. CREDIT CARD'
+*
+         DFHMDF POS=(10,27),                                           X
+               LENGTH=16,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='4. PERSONAL LOAN'
+*
+         DFHMDF POS=(11,27),                                           X
+               LENGTH=11,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='5. HOMELOAN'
+*
+OPT      DFHMDF POS=(14,22),                                           X
+               LENGTH=1,                                               X
+               COLOR=TURQUOISE,                                        X
+               ATTRB=(UNPROT,IC,FSET)
+*
+         DFHMDF POS=(17,25),                                           X
+               LENGTH=30,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='KEY IN SELECTION - PRESS ENTER'
+*
+         DFHMDF POS=(18,25),                                           X
+               LENGTH=30,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='REFRESH          - PRESS CLEAR'
+*
+         DFHMDF POS=(19,25),                                           X
+               LENGTH=28,                                              X
+               ATTRB=ASKIP,                                            X
+               INITIAL='END OF SESSION   - PRESS PF3'
+*
+MSG      DFHMDF POS=(23,2),                                            X
+               LENGTH=70,                                              X
+               ATTRB=ASKIP
+*
+         DFHMSD TYPE=FINAL
+         END
