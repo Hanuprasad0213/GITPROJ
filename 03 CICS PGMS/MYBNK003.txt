@@ -40,28 +40,24 @@
        COPY ACCSMR.
        COPY DFHAID.
        COPY DFHBMSCA.
-
       *-------------------------------------------------------------*
       *--             INCLUDE SQL COMMUNICATION AREA              --*
       *-------------------------------------------------------------*
        EXEC SQL
             INCLUDE SQLCA
        END-EXEC.
-
       *-------------------------------------------------------------*
       *--          INCLUDE ACCOUNT_MASTER TABLE DCLGEN            --*
       *-------------------------------------------------------------*
        EXEC SQL
             INCLUDE ACCTMAST
        END-EXEC.
-
       *-------------------------------------------------------------*
       *--          INCLUDE LOAN_MASTER TABLE DCLGEN               --*
       *-------------------------------------------------------------*
        EXEC SQL
             INCLUDE LOANMAST
        END-EXEC.
-
       *-------------------------------------------------------------*
       *--          CURSOR DECLARATION FOR FETCHING ROWS FROM      --*
       *--                   LOAN_MASTER TABLE.                    --*
@@ -70,7 +66,6 @@
             DECLARE LOANCURSOR CURSOR FOR
             SELECT
        END-EXEC.
-
       *-------------------------------------------------------------*
       *--                START OF PROGRAM FIELDS                  --*
       *-------------------------------------------------------------*
